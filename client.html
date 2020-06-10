@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Together Watch</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <style>
+    #player-controls-panel {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAJwCAYAAABI9AvEAAACkklEQVRIS1XHdxQIZBiFcTtCkmRHqSh7U1mpJMlK9t7Jpm2WUFnZK7PsbGWWUfYohOy9NZFVznNP5/vOff/4vfdJkOD/S8iPJCJFYicJKZIGkrEi95AiuZOCFPc6KUmRyklNivsCaViR+0mR1nmAFOmcB0mR3nmIFBmcjKTIFMjMimQhRVYnGykedrKTIofzCCkeDeRkRR4jxePOE6TI5eQmxZPOU6TIE8jLiuQjRX6nACkKOoVIUdgpQoqigWKsSHFSlHBKkqKU8zQpnnGeJUXpQBlWpCwpyjnlSfGcU4EUzzsvkOJFpyIpXgpUYkVeJkVl5xVSVHFeJUVVpxopqgdqsCI1SfGaU4sUrzu1SVHHqUuKeoH6rEgDUjR0GpGisdOEFE2dZqRoHmjBirQkRSunNSnaOG1J8YbTjhRvOu1J0SHQkRXpRIrOThdSdHW6kaK78xYp3g68w4q8S4r3nPdJ8YHTgxQ9nV6k6B3ow4r0JcWHzkek6Od8TIr+zgBSDAx8wop8SorPnEGkGOwMIcVQZxgpPg8MZ0VGkGKkM4oUo50xpBjrjCPFeGcCKSYGvmBFJpFisjOFFFOdaaSY7nxJiq8CM1iRmaSY5cwmxRxnLinmOV+TYn5gASuykBSLnMWkWOIsJcUy5xtSfBtYzoqsIMVKZxUpVjtrSPGd8z0p1jrrSLE+sIEV+YEUPzobSbHJ2UyKLc5WUmwLbGdFdpBip7OLFD85P5Nit7OHFHsDv7Ai+0ix3zlAil+dg6Q45BwmxZHAUVbkGCmOOydIcdI5RYrTzhlSnA2cY0XOk+KCc5EUl5zLpLji/EaK350/SPFn4C9W5G9SXHWukeK68w8pbjg3SXErcJsVuUOKf53/7gIPXjbYDO78kgAAAABJRU5ErkJggg==) left bottom/auto 92px repeat-x;
+
+    }
+
+    #player-controls-button-panel {
+      display: flex;
+      height: 48px;
+      line-height: 48px;
+      padding: 0 0 0 16px;
+      font-size: 12px;
+    }
+
+    #player-controls-play-button {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+      border: none;
+      width: 48px;
+      height: 48px;
+      background: url(data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmZmZmIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik04IDV2MTRsMTEtN3oiLz4KICAgIDxwYXRoIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiLz4KPC9zdmc+Cg==) center center/20px no-repeat;
+    }
+
+    .pause {
+      background: url(data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmZmZmIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik02IDE5aDRWNUg2djE0em04LTE0djE0aDRWNWgtNHoiLz4KICAgIDxwYXRoIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiLz4KPC9zdmc+Cg==) center center/20px no-repeat;
+    }
+
+    #player-controls-play-button:hover {
+      cursor: pointer;
+    }
+
+    #player-controls-play-button:focus {
+      outline: none;
+    }
+
+    #player-controls-current-time-display,
+    #player-controls-time-remaining-display {
+      color: rgba(255, 255, 255);
+      font-size: 14px;
+      user-select: none;
+    }
+
+    #player-controls-time-remaining-display {
+      margin-left: 4px;
+    }
+
+    #player-media-controls-button-spacer {
+      flex: 1 1 0%;
+    }
+
+    #player-controls-fullscreen-button {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+      border: none;
+      width: 48px;
+      height: 48px;
+      background: url(data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmZmZmIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiLz4KICAgIDxwYXRoIGQ9Ik03IDE0SDV2NWg1di0ySDd2LTN6bS0yLTRoMlY3aDNWNUg1djV6bTEyIDdoLTN2Mmg1di01aC0ydjN6TTE0IDV2MmgzdjNoMlY1aC01eiIvPgo8L3N2Zz4K) center center/20px no-repeat;
+    }
+
+    #player-controls-timeline {
+      height: 4px;
+      padding: 0 16px 20px;
+
+    }
+
+    #player-media-controls-segmented-track {
+      position: relative;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, .54);
+    }
+
+    #thumb {
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-top: -4px;
+      margin-left: -6px;
+      background-color: #ffffff;
+    }
+  </style>
+</head>
+
+<body @keyup.space="playToggle">
+  <div id="app">
+    <form action="" @submit.prevent>
+      <fieldset>
+        <legend>Together Watch</legend>
+
+        <label>昵称：<input type="text" placeholder="请输入你的昵称" autofocus v-model.trim="username" @keyup.enter="login"
+            :disabled="online"></label>
+        <button type="button" @click="login" v-show="!online" :disabled="!username">登录</button>
+        <button type="button" @click="logout" v-show="online">登出</button><br>
+
+        <p v-if="online">在线用户<span>({{username}} + {{users.length - 1}})</span></p>
+        <template v-for="user in users" v-if="user !== username">
+          <label><input type="checkbox" name="other-user" :value="user" @change="selectUser">{{user}}</label><br>
+        </template>
+
+        <p v-if="friend">同步用户已选择的视频：{{remoteFile}}</p>
+        <p><label><input type="file" accept="video/*" @change="handleFileChange"></label></p>
+
+        <h3>视频预览({{localFile}})</h3>
+        <div style="position: relative; display: inline-block;">
+          <video ref="video" :src="url" width="100%" @playing="handlePlaying" @pause="handlePause" @seeked="handleSeek"
+            @durationchange="handleDurationChange" @timeupdate="handleTimeUpdate"></video>
+          <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%;">
+            <div id="player-controls-panel">
+              <div id="player-controls-button-panel">
+                <!-- <button id="player-controls-play-button" @click="playToggle"></button> -->
+                <input type="button" id="player-controls-play-button" @click="playToggle">
+                <div id="player-controls-current-time-display">{{currentTime}}</div>
+                <div id="player-controls-time-remaining-display">/ {{duration}}</div>
+                <div id="player-media-controls-button-spacer"></div>
+                <div id="player-controls-volume-control-container">
+
+                </div>
+                <input type="button" id="player-controls-fullscreen-button" @click="fullScreenToggle">
+              </div>
+              <div id="player-controls-timeline">
+                <div id="player-media-controls-segmented-track">
+                  <div id="thumb"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        username: '',
+        friend: '',
+        online: false,
+        url: 'video.mp4',
+        users: [],
+        localFile: '',
+        remoteFile: '',
+        playing: false,
+        currentTime: 0,
+        duration: 0,
+        fullscreen: false,
+      },
+      methods: {
+        sendToServer(message) {
+          if (this.ws && this.ws.readyState === 1) {
+            this.ws.send(JSON.stringify(message))
+          }
+        },
+        login() {
+          this.ws = new WebSocket(`ws://localhost:8080/?name=${this.username}`)
+          this.ws.onopen = () => {
+            console.log(this.ws)
+            console.log('connected')
+            this.online = true
+          }
+          this.ws.onmessage = event => {
+            console.log('received message：', event.data)
+            let message = JSON.parse(event.data)
+            switch (message.type) {
+              case 'updateUsers':
+                this.users = message.content
+                break
+              case 'updateFile':
+                this.remoteFile = message.content
+                console.log('remoteFile', this.remoteFile)
+                break
+              case 'pause':
+                this.$refs.video.currentTime = message.data.currentTime
+                this.$refs.video.pause()
+                break
+              case 'play':
+                this.$refs.video.currentTime = message.data.currentTime
+                this.$refs.video.play()
+                break
+              case 'seek':
+                this.$refs.video.currentTime = message.data.currentTime
+                break
+            }
+          }
+          this.ws.onclose = () => {
+            console.log('websocket 断开')
+            this.online = false
+            this.users = []
+            this.remoteFile = ''
+          }
+          this.ws.onerror = err => {
+            console.log('websocket 断开', err)
+            this.online = false
+            this.users = []
+            this.remoteFile = ''
+          }
+        },
+        logout() {
+          this.ws.close()
+        },
+        selectUser(e) {
+          const friend = e.target.value
+          let confirmed = confirm(`确定同步${friend}的播放进度`)
+          if (confirmed) {
+            this.friend = friend
+            this.sendToServer({
+              type: 'updateFriends',
+              content: friend,
+            })
+          } else {
+            this.friend = ''
+          }
+        },
+        handleFileChange(e) {
+          let file = e.target.files[0]
+          this.localFile = file.name
+          this.url = this.getObjectURL(file)
+          this.sendToServer({
+            type: 'updateFile',
+            content: this.localFile,
+          })
+        },
+        handleDurationChange(e) {
+          console.log('change:', e)
+          this.duration = this.formateTime(e.target.duration)
+        },
+        handleTimeUpdate(e) {
+          this.currentTime = this.formateTime(e.target.currentTime)
+        },
+        playToggle() {
+          if (this.playing) {
+
+            this.$refs.video.pause()
+            this.sendToServer({
+              type: 'pause',
+              data: {
+                currentTime: this.$refs.video.currentTime
+              }
+            })
+          } else {
+            this.$refs.video.play()
+            this.sendToServer({
+              type: 'play',
+              data: {
+                currentTime: this.$refs.video.currentTime,
+              }
+            })
+          }
+        },
+        adjustProgress(e) {
+
+        },
+        adjustVolume(e) {
+          this.$refs.video.volume = e.offsetX / 700
+
+        },
+        fullScreenToggle() {
+          if (document.fullscreen) {
+            document.exitFullscreen()
+          } else {
+            this.$refs.video.requestFullscreen()
+              .then()
+              .catch(err => {
+                console.log(err)
+              })
+          }
+
+        },
+        handlePlaying(e) {
+          this.playing = true
+        },
+        handlePause(e) {
+          this.playing = false
+        },
+        handleSeek(e) {
+          console.log('pause event: ', e)
+
+        },
+        getObjectURL(file) {
+          let url = ''
+          if (window.createObjectURL != undefined) {
+            // basic
+            url = window.createObjectURL(file);
+          } else if (window.URL != undefined) {
+            // mozilla(firefox)
+            url = window.URL.createObjectURL(file);
+          } else if (window.webkitURL != undefined) {
+            // webkit or chrome
+            url = window.webkitURL.createObjectURL(file);
+          }
+          return url
+        },
+        formateTime(s) {
+          const hour = Math.floor(s / 3600)
+          const minute = (Math.floor(s / 60 - hour * 60)).toString().padStart(2, '0')
+          const second = Math.floor(s % 60).toString().padStart(2, '0')
+          return `${hour}:${minute}:${second}`
+        },
+      },
+      computed: {},
+      created() {
+
+      },
+      mounted() {
+        document.getElementById('player-media-controls-segmented-track').onmousedown = ev => {
+          let offsetX = ev.offsetX
+          let clientWidth = ev.target.clientWidth
+          document.getElementById('thumb').style.left = `${offsetX / clientWidth * 100}%`
+          this.$refs.video.currentTime = this.$refs.video.duration * offsetX / clientWidth
+
+          document.onmousemove = ev => {
+            offsetX = offsetX + ev.movementX
+            if (offsetX <= 0) {
+              offsetX = 0
+            } else if (offsetX >= clientWidth) {
+              offsetX = clientWidth
+            }
+
+
+            document.getElementById('thumb').style.left = `${offsetX / clientWidth * 100}%`
+
+            this.$refs.video.currentTime = this.$refs.video.duration * offsetX / clientWidth
+          }
+          this.sendToServer({
+            type: 'seek',
+            data: {
+              currentTime: this.$refs.video.currentTime
+            }
+          })
+        }
+        document.getElementById('thumb').onmousedown = ev => {
+          let offsetX = 0
+          let movementX = 0
+          document.onmousemove = ev => {
+            movementX += ev.movementX
+            if (offsetX <= 0) {
+              offsetX = 0
+            } else if (offsetX >= clientWidth) {
+              offsetX = clientWidth
+            }
+
+
+            document.getElementById('thumb').style.left = `${offsetX}px`
+
+            this.$refs.video.currentTime = this.$refs.video.duration * offsetX / clientWidth
+          }
+          this.sendToServer({
+            type: 'seek',
+            data: {
+              currentTime: this.$refs.video.currentTime
+            }
+          })
+        }
+        document.onmouseup = () => {
+          document.onmousemove = null
+        }
+      },
+    })
+  </script>
+</body>
+
+</html>
